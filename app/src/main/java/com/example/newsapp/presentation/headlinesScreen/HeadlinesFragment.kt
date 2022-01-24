@@ -14,12 +14,10 @@ import com.example.newsapp.R
 import com.example.newsapp.databinding.FragmentNewsListBinding
 import com.example.newsapp.domain.model.Article
 import com.example.newsapp.presentation.common.HeadlinesItemClickListener
-import com.example.newsapp.presentation.common.NewsViewModel
-import com.example.newsapp.presentation.common.NewsViewModelFactory
 import com.example.newsapp.presentation.common.NewsAdapter
+import com.example.newsapp.presentation.common.NewsViewModel
 import com.example.newsapp.util.PaginationScrollListener
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 
 @AndroidEntryPoint
@@ -90,6 +88,15 @@ class HeadlinesFragment : Fragment() {
                         R.id.action_headlinesFragment_to_detailsFragment,
                         bundle
                     )
+                }
+
+                override fun onBookmarkClick(article: Article, index: Int) {
+                    if (article.saved) {
+                        newsViewModel.deleteArticleFromDb(article)
+                    } else {
+                        newsViewModel.saveArticleToDb(article)
+                    }
+                    adapter.updateNews(index)
                 }
             })
         }

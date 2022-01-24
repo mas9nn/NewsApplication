@@ -35,9 +35,8 @@ class NewsAdapter : RecyclerView.Adapter<NewsAdapter.HeadlinesViewHolder>() {
 
     override fun onBindViewHolder(holder: HeadlinesViewHolder, position: Int) {
         holder.itemBinding.article = articles[position]
-        holder.itemBinding.root.setOnClickListener {
-            listener?.onClick(articles[position])
-        }
+        holder.itemBinding.listener = listener
+        holder.itemBinding.index = position
     }
 
     override fun getItemCount(): Int {
@@ -51,8 +50,21 @@ class NewsAdapter : RecyclerView.Adapter<NewsAdapter.HeadlinesViewHolder>() {
     fun addOnItemClickListener(listener: HeadlinesItemClickListener) {
         this.listener = listener
     }
+
+    fun updateNews(index: Int) {
+        articles[index] = articles[index].apply {
+            saved = !saved
+        }
+        notifyItemChanged(index)
+    }
+
+    fun deleteItem(index: Int) {
+        articles.removeAt(index)
+        notifyItemRemoved(index)
+    }
 }
 
 interface HeadlinesItemClickListener {
     fun onClick(article: Article)
+    fun onBookmarkClick(article: Article, index: Int)
 }

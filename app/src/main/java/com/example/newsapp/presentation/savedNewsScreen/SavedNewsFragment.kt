@@ -1,4 +1,4 @@
-package com.example.newsapp.presentation.everythingScreen
+package com.example.newsapp.presentation.savedNewsScreen
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -16,12 +16,11 @@ import com.example.newsapp.domain.model.Article
 import com.example.newsapp.presentation.common.HeadlinesItemClickListener
 import com.example.newsapp.presentation.common.NewsAdapter
 import com.example.newsapp.presentation.common.NewsViewModel
-import com.example.newsapp.util.PaginationScrollListener
 import dagger.hilt.android.AndroidEntryPoint
 
 
 @AndroidEntryPoint
-class EverythingFragment : Fragment() {
+class SavedNewsFragment : Fragment() {
 
     private lateinit var binding: FragmentNewsListBinding
 
@@ -29,10 +28,6 @@ class EverythingFragment : Fragment() {
 
     private var adapter = NewsAdapter()
 
-    private var isLastPage: Boolean = false
-    private var isLoading: Boolean = false
-    private var count = 1
-    private var maxCount = Integer.MAX_VALUE
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,52 +45,24 @@ class EverythingFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         //Get data when user swipe to refresh
-        binding.swipeToRefresh.setOnRefreshListener {
-            binding.swipeToRefresh.isRefreshing = true
-            isLastPage = false
-            count = 1
-            adapter.clearData()
-            newsViewModel.getEverything(count)
-        }
         //Init recyclerView
         binding.newsRecycler.let {
             val layoutManager = LinearLayoutManager(requireContext())
             it.layoutManager = layoutManager
             it.adapter = adapter
-            //Add pagination to recyclerView
-            it.addOnScrollListener(object :
-                PaginationScrollListener(layoutManager) {
-                override fun isLastPage(): Boolean {
-                    return isLastPage
-                }
-
-                override fun isLoading(): Boolean {
-                    return isLoading
-                }
-
-                override fun loadMoreItems() {
-                    if (count <= maxCount) {
-                        newsViewModel.getEverything(count)
-                        isLoading = true
-                    }
-                }
-            })
             adapter.addOnItemClickListener(object : HeadlinesItemClickListener {
                 override fun onClick(article: Article) {
                     val bundle = bundleOf("article" to article)
                     findNavController().navigate(
-                        R.id.action_everythingFragment_to_detailsFragment,
+                        R.id.action_savedNewsFragment_to_detailsFragment,
                         bundle
                     )
                 }
 
                 override fun onBookmarkClick(article: Article, index: Int) {
                     adapter.updateNews(index)
-                    if (article.saved) {
-                        newsViewModel.deleteArticleFromDb(article)
-                    } else {
-                        newsViewModel.saveArticleToDb(article)
-                    }
+                    newsViewModel.deleteArticleFromDb(article)
+                    adapter.deleteItem(index)
                 }
             })
         }
@@ -104,15 +71,10 @@ class EverythingFragment : Fragment() {
             it?.let { state ->
                 if (state.result != null) {
                     adapter.addData(state.result.articles)
-                    count++
-                } else if (!state.loading) {
-                    isLastPage = true
                 }
-                isLoading = false
-                binding.swipeToRefresh.isRefreshing = false
             }
         })
 
-        newsViewModel.getEverything(count)
+        newsViewModel.getSavedNews()
     }
 }

@@ -4,14 +4,16 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.newsapp.domain.model.Article
 import com.example.newsapp.domain.model.NewsRequest
-import com.example.newsapp.domain.useCase.getHeadlinesUseCase.GetHeadlinesUseCase
 import com.example.newsapp.util.Resource
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -332,6 +334,22 @@ class NewsViewModel @Inject constructor(
                 }
             }
         }.launchIn(viewModelScope)
+    }
+
+    fun saveArticleToDb(article: Article) {
+        newsUseCases.saveArticleUseCase.invoke(article).launchIn(viewModelScope)
+    }
+
+    fun deleteArticleFromDb(article: Article) {
+        newsUseCases.deleteArticleUseCase.invoke(article).launchIn(viewModelScope)
+    }
+
+    fun getSavedNews() {
+        viewModelScope.launch {
+            newsUseCases.getSavedNewsUseCase.invoke().collectLatest {
+                _state.value = HeadlinesState(result = NewsRequest(articles = it, "", it.size))
+            }
+        }
     }
 }
 

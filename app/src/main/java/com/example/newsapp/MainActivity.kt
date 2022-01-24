@@ -1,11 +1,8 @@
 package com.example.newsapp
 
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
@@ -52,7 +49,7 @@ class MainActivity : AppCompatActivity() {
         bottomNavigationView.setupWithNavController(navController)
         navController.addOnDestinationChangedListener { controller, destination, arguments ->
             when (destination.id) {
-                R.id.searchCategoryFragment, R.id.detailsFragment -> {
+                R.id.searchCategoryFragment, R.id.detailsFragment,R.id.savedNewsFragment -> {
                     bottomNavigationView.hide()
                     mainAppBar.hide()
                 }
@@ -68,15 +65,23 @@ class MainActivity : AppCompatActivity() {
         val mainToolbar = findViewById<Toolbar>(R.id.mainToolbar)
         mainToolbar.inflateMenu(R.menu.app_bar_menu)
         mainToolbar.setOnMenuItemClickListener {
-            if (it.itemId == R.id.searchCategoryFragment) {
-                val navOptions = NavOptions.Builder()
-                    .setPopUpTo(R.id.news_nav_graph, true)
-                    .setLaunchSingleTop(true)
-                    .build()
-                navController.navigate(R.id.searchCategoryFragment, null, navOptions)
-                true
+            when (it.itemId) {
+                R.id.searchCategoryScreen -> {
+                    val navOptions = NavOptions.Builder()
+                        .setPopUpTo(R.id.news_nav_graph, true)
+                        .setLaunchSingleTop(true)
+                        .build()
+                    navController.navigate(R.id.searchCategoryFragment, null, navOptions)
+                    true
+                }
+                R.id.savedNewsScreen -> {
+                    navController.navigate(R.id.savedNewsFragment)
+                    true
+                }
+                else -> {
+                    false
+                }
             }
-            false
         }
     }
 }

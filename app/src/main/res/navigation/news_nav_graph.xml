@@ -48,4 +48,12 @@
         android:id="@+id/detailsFragment"
         android:name="com.example.newsapp.presentation.detailsScreen.DetailsFragment"
         android:label="DetailsFragment" />
+    <fragment
+        android:id="@+id/savedNewsFragment"
+        android:name="com.example.newsapp.presentation.savedNewsScreen.SavedNewsFragment"
+        android:label="SavedNewsFragment" >
+        <action
+            android:id="@+id/action_savedNewsFragment_to_detailsFragment"
+            app:destination="@id/detailsFragment" />
+    </fragment>
 </navigation>
