@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/news_nav_graph"
+    app:startDestination="@id/searchCategoryFragment">
+
+    <fragment
+        android:id="@+id/searchCategoryFragment"
+        android:name="com.example.newsapp.presentation.searchCategoryScreen.SearchCategoryFragment"
+        android:label="SearchCategoryFragment">
+        <action
+            android:id="@+id/action_searchCategoryFragment_to_headlinesFragment"
+            app:destination="@id/headlinesFragment"
+            app:launchSingleTop="true"
+            app:popUpTo="@id/news_nav_graph"
+            app:popUpToInclusive="true">
+            <argument
+                android:name="category"
+                app:argType="string" />
+        </action>
+
+    </fragment>
+    <fragment
+        android:id="@+id/headlinesFragment"
+        android:name="com.example.newsapp.presentation.headlinesScreen.HeadlinesFragment"
+        android:label="HeadlinesFragment">
+        <action
+            android:id="@+id/action_headlinesFragment_to_detailsFragment"
+            app:destination="@id/detailsFragment">
+            <argument
+                android:name="article"
+                app:argType="com.example.newsapp.domain.model.Article" />
+        </action>
+    </fragment>
+    <fragment
+        android:id="@+id/everythingFragment"
+        android:name="com.example.newsapp.presentation.everythingScreen.EverythingFragment"
+        android:label="EverythingFragment">
+        <action
+            android:id="@+id/action_everythingFragment_to_detailsFragment"
+            app:destination="@id/detailsFragment">
+            <argument
+                android:name="article"
+                app:argType="com.example.newsapp.domain.model.Article" />
+        </action>
+    </fragment>
+    <fragment
+        android:id="@+id/detailsFragment"
+        android:name="com.example.newsapp.presentation.detailsScreen.DetailsFragment"
+        android:label="DetailsFragment" />
+</navigation>
