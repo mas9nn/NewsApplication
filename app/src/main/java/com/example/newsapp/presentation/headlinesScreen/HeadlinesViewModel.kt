@@ -33,14 +33,20 @@ class HeadlinesViewModel(
                     if (result.data?.totalResults?.coerceAtLeast(0) == 0) {
                         _state.value = NewsState(noContent = searchQuery)
                     } else {
-                        _state.value = NewsState(result = result.data)
+                        val fullList = _state.value?.result
+                        _state.value = _state.value?.copy(
+                            loading = false,
+                            result = fullList?.apply {
+                                addAll(result.data?.articles ?: listOf())
+                            })
                     }
                 }
                 is Resource.Loading -> {
-                    _state.value = NewsState(loading = true, isFirstPage = page == 1)
+                    _state.value = _state.value?.copy(loading = true, isFirstPage = page == 1)
                 }
                 else -> {
-                    _state.value = NewsState(error = true, isLastPage = true)
+                    _state.value =
+                        _state.value?.copy(loading = false, error = true, isLastPage = true)
                 }
             }
         }.launchIn(viewModelScope)

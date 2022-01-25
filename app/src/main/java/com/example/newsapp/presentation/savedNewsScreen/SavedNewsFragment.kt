@@ -68,7 +68,7 @@ class SavedNewsFragment : Fragment(R.layout.fragment_saved_news_list) {
         savedNewsViewModel.state.observe(viewLifecycleOwner, {
             it?.let { state ->
                 state.articles?.let { list ->
-                    adapter.setData(list)
+                    adapter.addData(list.reversed())
                 }
             }
         })

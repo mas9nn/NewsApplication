@@ -55,15 +55,13 @@ class EverythingFragment : Fragment(R.layout.fragment_everything) {
     private fun initObserver() {
         everythingViewModel.state.observe(viewLifecycleOwner, {
             it?.let { state ->
-                if (state.result != null) {
-                    adapter.addData(state.result.articles)
-                    page++
-                    everythingViewModel.clearData()
-                }
                 isLastPage = state.isLastPage
                 isLoading = state.loading
                 binding.swipeToRefreshEverything.isRefreshing =
-                    (page == 1) && state.noContent.isEmpty()
+                    (page == 1) && state.noContent.isEmpty() && state.loading
+                state.result?.let {list->
+                    adapter.addData(list)
+                }
             }
         })
     }
@@ -73,7 +71,7 @@ class EverythingFragment : Fragment(R.layout.fragment_everything) {
             binding.swipeToRefreshEverything.isRefreshing = true
             isLastPage = false
             page = 1
-            adapter.clearData()
+            everythingViewModel.clearData()
             everythingViewModel.getEverything(page)
         }
     }
@@ -96,6 +94,7 @@ class EverythingFragment : Fragment(R.layout.fragment_everything) {
 
                 override fun loadMoreItems() {
                     if (!isLoading && !isLastPage) {
+                        page++
                         everythingViewModel.getEverything(page)
                         isLoading = true
                     }

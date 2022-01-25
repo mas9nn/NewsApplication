@@ -1,6 +1,6 @@
 package com.example.newsapp.presentation.common
 
-import com.example.newsapp.domain.model.NewsRequest
+import com.example.newsapp.domain.model.Article
 
 data class NewsState(
     val loading: Boolean = false,
@@ -8,5 +8,5 @@ data class NewsState(
     val isLastPage:Boolean = false,
     val isFirstPage:Boolean = false,
     val noContent: String = "",
-    val result: NewsRequest? = null
+    val result: MutableList<Article>? = mutableListOf()
 )

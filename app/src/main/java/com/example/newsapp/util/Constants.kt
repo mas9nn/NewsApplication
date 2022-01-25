@@ -2,7 +2,7 @@ package com.example.newsapp.util
 
 class Constants {
     companion object {
-        const val API_KEY = "750a0e96c7f8405fa57681a5000883fe"
+        const val API_KEY = "4c22d84481d9467dab8e307581a0bdaa"
         const val BASE_URL = "https://newsapi.org"
         const val PAGE_SIZE = 15
         const val TIMEOUTS = 60L

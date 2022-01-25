@@ -20,22 +20,10 @@ class NewsAdapter : RecyclerView.Adapter<NewsAdapter.HeadlinesViewHolder>() {
 
 
     fun addData(list: List<Article>) {
-//        val oldList = articles
-//        val newList = articles.apply {
-//            addAll(list)
-//        }
-//        val diffResult = DiffUtil.calculateDiff(BoxSettingsDiffCallback(oldList, newList))
-//        articles = newList
-//        diffResult.dispatchUpdatesTo(this)
-        val size = articles.size
-        articles.addAll(list)
-        notifyItemRangeInserted(size, articles.size)
-    }
-
-    fun setData(list: List<Article>) {
+        val diffResult = DiffUtil.calculateDiff(BoxSettingsDiffCallback(articles, list))
         articles.clear()
         articles.addAll(list)
-        notifyDataSetChanged()
+        diffResult.dispatchUpdatesTo(this)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = HeadlinesViewHolder(

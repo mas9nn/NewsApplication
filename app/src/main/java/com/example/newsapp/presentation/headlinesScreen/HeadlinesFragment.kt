@@ -53,7 +53,7 @@ class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
             binding.swipeToRefresh.isRefreshing = true
             isLastPage = false
             page = 1
-            adapter.clearData()
+            headlinesViewModel.clearData()
             headlinesViewModel.getHeadlines(1)
         }
     }
@@ -76,6 +76,7 @@ class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
 
                 override fun loadMoreItems() {
                     if (!isLoading && !isLastPage) {
+                        page++
                         headlinesViewModel.getHeadlines(page)
                         isLoading = true
                     }
@@ -105,14 +106,13 @@ class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
     private fun initObserver() {
         headlinesViewModel.state.observe(viewLifecycleOwner, {
             it?.let { state ->
-                if (state.result != null) {
-                    adapter.addData(state.result.articles)
-                    page++
-                    headlinesViewModel.clearData()
-                }
                 isLastPage = state.isLastPage
                 isLoading = state.loading
-                binding.swipeToRefresh.isRefreshing = (page == 1) && state.noContent.isEmpty()
+                binding.swipeToRefresh.isRefreshing =
+                    (page == 1) && state.noContent.isEmpty() && state.loading
+                state.result?.let {list->
+                    adapter.addData(list)
+                }
             }
         })
     }
