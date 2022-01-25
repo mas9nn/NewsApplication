@@ -9,6 +9,7 @@ import com.example.newsapp.data.remote.interceptors.NetworkConnectionInterceptor
 import com.example.newsapp.data.repository.NewsRepositoryImpl
 import com.example.newsapp.domain.repository.NewsRepository
 import com.example.newsapp.util.Constants.Companion.BASE_URL
+import com.example.newsapp.util.Constants.Companion.TIMEOUTS
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -32,9 +33,9 @@ object AppModule {
         val client = OkHttpClient.Builder()
             .addInterceptor(logging)
             .addInterceptor(networkConnectionInterceptor)
-            .connectTimeout(60, TimeUnit.SECONDS)
-            .readTimeout(60, TimeUnit.SECONDS)
-            .writeTimeout(60, TimeUnit.SECONDS)
+            .connectTimeout(TIMEOUTS, TimeUnit.SECONDS)
+            .readTimeout(TIMEOUTS, TimeUnit.SECONDS)
+            .writeTimeout(TIMEOUTS, TimeUnit.SECONDS)
             .build()
 
         return Retrofit.Builder()

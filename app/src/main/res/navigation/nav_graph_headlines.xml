@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph_headlines"
+    app:startDestination="@id/headlinesFragment">
+
+    <fragment
+        android:id="@+id/headlinesFragment"
+        android:name="com.example.newsapp.presentation.headlinesScreen.HeadlinesFragment"
+        android:label="HeadlinesFragment">
+        <argument
+            android:name="searchQuery"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/detailsFragment"
+        android:name="com.example.newsapp.presentation.detailsScreen.DetailsFragment"
+        android:label="DetailsFragment" />
+</navigation>

@@ -35,7 +35,7 @@ fun setError(view: TextInputLayout, enable: Boolean, errorText: String?) {
     if (enable) {
         view.error = errorText
         errorText?.let {
-            Toast.makeText(view.context, errorText ?: "Error", Toast.LENGTH_SHORT).show()
+            Toast.makeText(view.context, errorText, Toast.LENGTH_SHORT).show()
         }
     } else {
         view.error = null

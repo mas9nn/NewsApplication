@@ -1,64 +1,64 @@
 package com.example.newsapp.presentation.headlinesScreen
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.os.bundleOf
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.newsapp.R
-import com.example.newsapp.databinding.FragmentNewsListBinding
+import com.example.newsapp.databinding.FragmentHeadlinesBinding
 import com.example.newsapp.domain.model.Article
+import com.example.newsapp.domain.useCase.model.NewsUseCases
 import com.example.newsapp.presentation.common.HeadlinesItemClickListener
 import com.example.newsapp.presentation.common.NewsAdapter
-import com.example.newsapp.presentation.common.NewsViewModel
 import com.example.newsapp.util.PaginationScrollListener
+import com.example.newsapp.util.viewModelCreator
 import dagger.hilt.android.AndroidEntryPoint
-
+import javax.inject.Inject
 
 @AndroidEntryPoint
-class HeadlinesFragment : Fragment() {
+class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
+    @Inject
+    lateinit var newsUseCase: NewsUseCases
 
+    private lateinit var binding: FragmentHeadlinesBinding
 
-    private lateinit var binding: FragmentNewsListBinding
-
-    private lateinit var newsViewModel: NewsViewModel
+    private val headlinesViewModel by viewModelCreator {
+        HeadlinesViewModel(newsUseCases = newsUseCase, getSearchQuery())
+    }
 
     private var adapter = NewsAdapter()
 
     private var isLastPage: Boolean = false
     private var isLoading: Boolean = false
-    private var count = 1
-    private var maxCount = Integer.MAX_VALUE
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        binding =
-            DataBindingUtil.inflate(inflater, R.layout.fragment_news_list, container, false)
-        newsViewModel =
-            ViewModelProvider(requireActivity()).get(NewsViewModel::class.java)
-        binding.viewModel = newsViewModel
-        binding.lifecycleOwner = this
-        return binding.root
-    }
+    private var page = 1
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding = FragmentHeadlinesBinding.bind(view)
+        binding.viewModel = headlinesViewModel
+
+        binding.lifecycleOwner = this
         //Get data when user swipe to refresh
+        initSwipeToRefresh()
+        //Init recyclerView
+        initRecycler()
+        //Init observer
+        initObserver()
+    }
+
+    private fun initSwipeToRefresh() {
         binding.swipeToRefresh.setOnRefreshListener {
             binding.swipeToRefresh.isRefreshing = true
             isLastPage = false
-            count = 1
+            page = 1
             adapter.clearData()
-            newsViewModel.getHeadlines(count)
+            headlinesViewModel.getHeadlines(1)
         }
-        //Init recyclerView
+    }
+
+    private fun initRecycler() {
         binding.newsRecycler.let {
             val layoutManager = LinearLayoutManager(requireContext())
             it.layoutManager = layoutManager
@@ -75,8 +75,8 @@ class HeadlinesFragment : Fragment() {
                 }
 
                 override fun loadMoreItems() {
-                    if (count <= maxCount) {
-                        newsViewModel.getHeadlines(count)
+                    if (!isLoading && !isLastPage) {
+                        headlinesViewModel.getHeadlines(page)
                         isLoading = true
                     }
                 }
@@ -85,35 +85,38 @@ class HeadlinesFragment : Fragment() {
                 override fun onClick(article: Article) {
                     val bundle = bundleOf("article" to article)
                     findNavController().navigate(
-                        R.id.action_headlinesFragment_to_detailsFragment,
+                        R.id.detailsFragment,
                         bundle
                     )
                 }
 
                 override fun onBookmarkClick(article: Article, index: Int) {
                     if (article.saved) {
-                        newsViewModel.deleteArticleFromDb(article)
+                        headlinesViewModel.deleteArticleFromDb(article)
                     } else {
-                        newsViewModel.saveArticleToDb(article)
+                        headlinesViewModel.saveArticleToDb(article)
                     }
                     adapter.updateNews(index)
                 }
             })
         }
-        //Observe request from server
-        newsViewModel.state.observe(viewLifecycleOwner, {
+    }
+
+    private fun initObserver() {
+        headlinesViewModel.state.observe(viewLifecycleOwner, {
             it?.let { state ->
                 if (state.result != null) {
                     adapter.addData(state.result.articles)
-                    count++
-                } else if (!state.loading) {
-                    isLastPage = true
+                    page++
+                    headlinesViewModel.clearData()
                 }
-                isLoading = false
-                binding.swipeToRefresh.isRefreshing = false
+                isLastPage = state.isLastPage
+                isLoading = state.loading
+                binding.swipeToRefresh.isRefreshing = page == 1
             }
         })
-
-        newsViewModel.getHeadlines(count)
     }
+
+    private fun getSearchQuery() =
+        findNavController().graph.arguments["searchQuery"]?.defaultValue?.toString() ?: ""
 }

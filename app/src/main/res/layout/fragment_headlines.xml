@@ -5,7 +5,7 @@
 
         <variable
             name="viewModel"
-            type="com.example.newsapp.presentation.common.NewsViewModel" />
+            type="com.example.newsapp.presentation.headlinesScreen.HeadlinesViewModel" />
     </data>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -30,7 +30,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                app:changeVisibility="@{viewModel.state.loading}"
+                app:changeVisibility="@{viewModel.state.loading&amp;&amp;!viewModel.state.firstPage}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

@@ -12,8 +12,8 @@ class GetEverythingUseCase @Inject constructor(private val newsRepository: NewsR
     operator fun invoke(query: String,page:Int) = flow {
         emit(Resource.Loading())
         try {
-            val user = newsRepository.getEverything(query,page)
-            emit(user.checkResponse())
+            val request = newsRepository.getEverything(query,page)
+            emit(request.checkResponse())
         } catch (e: NoInternetException) {
             emit(Resource.NoInternet())
         }

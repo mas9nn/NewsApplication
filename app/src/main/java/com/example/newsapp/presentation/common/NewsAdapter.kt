@@ -3,6 +3,7 @@ package com.example.newsapp.presentation.common
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.newsapp.R
 import com.example.newsapp.databinding.ItemArticleBinding
@@ -10,7 +11,7 @@ import com.example.newsapp.domain.model.Article
 
 class NewsAdapter : RecyclerView.Adapter<NewsAdapter.HeadlinesViewHolder>() {
 
-    private val articles: MutableList<Article> = mutableListOf()
+    private var articles: MutableList<Article> = mutableListOf()
 
     private var listener: HeadlinesItemClickListener? = null
 
@@ -19,9 +20,15 @@ class NewsAdapter : RecyclerView.Adapter<NewsAdapter.HeadlinesViewHolder>() {
 
 
     fun addData(list: List<Article>) {
-        val size = articles.size
+        val diffResult = DiffUtil.calculateDiff(BoxSettingsDiffCallback(this.articles.toList(), list))
+        this.articles = list.toMutableList()
+        diffResult.dispatchUpdatesTo(this)
+    }
+
+    fun setData(list: List<Article>){
+        articles.clear()
         articles.addAll(list)
-        notifyItemRangeInserted(size, articles.size)
+        notifyDataSetChanged()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = HeadlinesViewHolder(
@@ -34,9 +41,9 @@ class NewsAdapter : RecyclerView.Adapter<NewsAdapter.HeadlinesViewHolder>() {
     )
 
     override fun onBindViewHolder(holder: HeadlinesViewHolder, position: Int) {
-        holder.itemBinding.article = articles[position]
+        holder.itemBinding.article = articles[holder.adapterPosition]
         holder.itemBinding.listener = listener
-        holder.itemBinding.index = position
+        holder.itemBinding.index = holder.adapterPosition
     }
 
     override fun getItemCount(): Int {
@@ -63,7 +70,22 @@ class NewsAdapter : RecyclerView.Adapter<NewsAdapter.HeadlinesViewHolder>() {
         notifyItemRemoved(index)
     }
 }
+class BoxSettingsDiffCallback(
+    private val oldList: List<Article>,
+    private val newList: List<Article>
+) : DiffUtil.Callback() {
 
+    override fun getOldListSize(): Int = oldList.size
+
+    override fun getNewListSize(): Int = newList.size
+
+    override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+        return oldList[oldItemPosition].url == newList[newItemPosition].url
+    }
+    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+        return oldList[oldItemPosition] == newList[newItemPosition]
+    }
+}
 interface HeadlinesItemClickListener {
     fun onClick(article: Article)
     fun onBookmarkClick(article: Article, index: Int)

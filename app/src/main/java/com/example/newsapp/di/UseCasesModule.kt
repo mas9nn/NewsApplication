@@ -6,7 +6,8 @@ import com.example.newsapp.domain.useCase.getEverythingUseCase.GetEverythingUseC
 import com.example.newsapp.domain.useCase.getHeadlinesUseCase.GetHeadlinesUseCase
 import com.example.newsapp.domain.useCase.getSavedNewsUseCase.GetSavedNewsUseCase
 import com.example.newsapp.domain.useCase.saveArticleUseCase.SaveArticleUseCase
-import com.example.newsapp.presentation.common.NewsUseCases
+import com.example.newsapp.domain.useCase.model.NewsDbUseCases
+import com.example.newsapp.domain.useCase.model.NewsUseCases
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,10 +20,21 @@ object UseCasesModule {
 
     @Provides
     @Singleton
-    fun provideNewsUseCase(repository: NewsRepository): NewsUseCases {
+    fun provideNewsUseCase(
+        repository: NewsRepository,
+        newsDbUseCases: NewsDbUseCases
+    ): NewsUseCases {
         return NewsUseCases(
             getEverythingUseCase = GetEverythingUseCase(newsRepository = repository),
             getHeadlinesUseCase = GetHeadlinesUseCase(newsRepository = repository),
+            newsDbUseCases = newsDbUseCases
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideNewsDbUseCase(repository: NewsRepository): NewsDbUseCases {
+        return NewsDbUseCases(
             getSavedNewsUseCase = GetSavedNewsUseCase(newsRepository = repository),
             saveArticleUseCase = SaveArticleUseCase(newsRepository = repository),
             deleteArticleUseCase = DeleteArticleUseCase(newsRepository = repository)

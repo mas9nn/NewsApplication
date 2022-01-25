@@ -1,64 +1,84 @@
 package com.example.newsapp.presentation.everythingScreen
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.os.bundleOf
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.newsapp.R
-import com.example.newsapp.databinding.FragmentNewsListBinding
+import com.example.newsapp.databinding.FragmentEverythingBinding
 import com.example.newsapp.domain.model.Article
+import com.example.newsapp.domain.useCase.model.NewsUseCases
 import com.example.newsapp.presentation.common.HeadlinesItemClickListener
 import com.example.newsapp.presentation.common.NewsAdapter
-import com.example.newsapp.presentation.common.NewsViewModel
 import com.example.newsapp.util.PaginationScrollListener
+import com.example.newsapp.util.viewModelCreator
 import dagger.hilt.android.AndroidEntryPoint
-
+import javax.inject.Inject
 
 @AndroidEntryPoint
-class EverythingFragment : Fragment() {
+class EverythingFragment : Fragment(R.layout.fragment_everything) {
+    @Inject
+    lateinit var newsUseCase: NewsUseCases
 
-    private lateinit var binding: FragmentNewsListBinding
+    private lateinit var binding: FragmentEverythingBinding
 
-    private lateinit var newsViewModel: NewsViewModel
+    private val everythingViewModel by viewModelCreator {
+        EverythingViewModel(newsUseCases = newsUseCase, getSearchQuery())
+    }
+
 
     private var adapter = NewsAdapter()
 
     private var isLastPage: Boolean = false
     private var isLoading: Boolean = false
-    private var count = 1
-    private var maxCount = Integer.MAX_VALUE
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        binding =
-            DataBindingUtil.inflate(inflater, R.layout.fragment_news_list, container, false)
-        newsViewModel =
-            ViewModelProvider(requireActivity()).get(NewsViewModel::class.java)
-        binding.viewModel = newsViewModel
-        binding.lifecycleOwner = this
-        return binding.root
-    }
+    private var page = 1
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        binding = FragmentEverythingBinding.bind(view)
+
+        binding.viewModel = everythingViewModel
+
+        binding.lifecycleOwner = viewLifecycleOwner
+
         //Get data when user swipe to refresh
-        binding.swipeToRefresh.setOnRefreshListener {
-            binding.swipeToRefresh.isRefreshing = true
-            isLastPage = false
-            count = 1
-            adapter.clearData()
-            newsViewModel.getEverything(count)
-        }
+        initSwipeToRefresh()
         //Init recyclerView
-        binding.newsRecycler.let {
+        initRecycler()
+        //Observe request from server
+        initObserver()
+    }
+
+    private fun initObserver() {
+        everythingViewModel.state.observe(viewLifecycleOwner, {
+            it?.let { state ->
+                if (state.result != null) {
+                    adapter.addData(state.result.articles)
+                    page++
+                    everythingViewModel.clearData()
+                }
+                isLastPage = state.isLastPage
+                isLoading = state.loading
+                binding.swipeToRefreshEverything.isRefreshing = page == 1
+            }
+        })
+    }
+
+    private fun initSwipeToRefresh() {
+        binding.swipeToRefreshEverything.setOnRefreshListener {
+            binding.swipeToRefreshEverything.isRefreshing = true
+            isLastPage = false
+            page = 1
+            adapter.clearData()
+            everythingViewModel.getEverything(page)
+        }
+    }
+
+    private fun initRecycler() {
+        binding.newsRecyclerEverything.let {
             val layoutManager = LinearLayoutManager(requireContext())
             it.layoutManager = layoutManager
             it.adapter = adapter
@@ -74,8 +94,8 @@ class EverythingFragment : Fragment() {
                 }
 
                 override fun loadMoreItems() {
-                    if (count <= maxCount) {
-                        newsViewModel.getEverything(count)
+                    if (!isLoading && !isLastPage) {
+                        everythingViewModel.getEverything(page)
                         isLoading = true
                     }
                 }
@@ -84,35 +104,23 @@ class EverythingFragment : Fragment() {
                 override fun onClick(article: Article) {
                     val bundle = bundleOf("article" to article)
                     findNavController().navigate(
-                        R.id.action_everythingFragment_to_detailsFragment,
+                        R.id.detailsFragment,
                         bundle
                     )
                 }
 
                 override fun onBookmarkClick(article: Article, index: Int) {
-                    adapter.updateNews(index)
                     if (article.saved) {
-                        newsViewModel.deleteArticleFromDb(article)
+                        everythingViewModel.deleteArticleFromDb(article)
                     } else {
-                        newsViewModel.saveArticleToDb(article)
+                        everythingViewModel.saveArticleToDb(article)
                     }
+                    adapter.updateNews(index)
                 }
             })
         }
-        //Observe request from server
-        newsViewModel.state.observe(viewLifecycleOwner, {
-            it?.let { state ->
-                if (state.result != null) {
-                    adapter.addData(state.result.articles)
-                    count++
-                } else if (!state.loading) {
-                    isLastPage = true
-                }
-                isLoading = false
-                binding.swipeToRefresh.isRefreshing = false
-            }
-        })
-
-        newsViewModel.getEverything(count)
     }
+
+    private fun getSearchQuery() =
+        findNavController().graph.arguments["searchQuery"]?.defaultValue?.toString() ?: ""
 }
