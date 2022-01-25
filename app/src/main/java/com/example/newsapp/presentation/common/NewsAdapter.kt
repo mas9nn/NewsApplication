@@ -20,12 +20,19 @@ class NewsAdapter : RecyclerView.Adapter<NewsAdapter.HeadlinesViewHolder>() {
 
 
     fun addData(list: List<Article>) {
-        val diffResult = DiffUtil.calculateDiff(BoxSettingsDiffCallback(this.articles.toList(), list))
-        this.articles = list.toMutableList()
-        diffResult.dispatchUpdatesTo(this)
+//        val oldList = articles
+//        val newList = articles.apply {
+//            addAll(list)
+//        }
+//        val diffResult = DiffUtil.calculateDiff(BoxSettingsDiffCallback(oldList, newList))
+//        articles = newList
+//        diffResult.dispatchUpdatesTo(this)
+        val size = articles.size
+        articles.addAll(list)
+        notifyItemRangeInserted(size, articles.size)
     }
 
-    fun setData(list: List<Article>){
+    fun setData(list: List<Article>) {
         articles.clear()
         articles.addAll(list)
         notifyDataSetChanged()
@@ -70,6 +77,7 @@ class NewsAdapter : RecyclerView.Adapter<NewsAdapter.HeadlinesViewHolder>() {
         notifyItemRemoved(index)
     }
 }
+
 class BoxSettingsDiffCallback(
     private val oldList: List<Article>,
     private val newList: List<Article>
@@ -82,10 +90,12 @@ class BoxSettingsDiffCallback(
     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
         return oldList[oldItemPosition].url == newList[newItemPosition].url
     }
+
     override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
         return oldList[oldItemPosition] == newList[newItemPosition]
     }
 }
+
 interface HeadlinesItemClickListener {
     fun onClick(article: Article)
     fun onBookmarkClick(article: Article, index: Int)

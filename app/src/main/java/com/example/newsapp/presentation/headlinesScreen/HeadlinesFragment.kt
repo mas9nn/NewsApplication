@@ -112,7 +112,7 @@ class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
                 }
                 isLastPage = state.isLastPage
                 isLoading = state.loading
-                binding.swipeToRefresh.isRefreshing = page == 1
+                binding.swipeToRefresh.isRefreshing = (page == 1) && state.noContent.isEmpty()
             }
         })
     }

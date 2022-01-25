@@ -62,7 +62,8 @@ class EverythingFragment : Fragment(R.layout.fragment_everything) {
                 }
                 isLastPage = state.isLastPage
                 isLoading = state.loading
-                binding.swipeToRefreshEverything.isRefreshing = page == 1
+                binding.swipeToRefreshEverything.isRefreshing =
+                    (page == 1) && state.noContent.isEmpty()
             }
         })
     }
